@@ -78,3 +78,16 @@ jobs:
           r-version: ${{ matrix.R }}
       - run: Rscript -e 'print(sessionInfo()$R.version$version.string)'
 
+# Run bash commands in terminal
+  Greetings:
+    runs-on: ubuntu-latest
+    name: hello-where-am-i
+    steps:
+      - uses: actions/checkout@v2
+      - run: echo "Multiple run clause"
+      - run: |
+         echo "Hello"
+         echo "Current workdir is:"
+         echo $GITHUB_WORKSPACE
+         echo "$(pwd)"
+         ls -la
