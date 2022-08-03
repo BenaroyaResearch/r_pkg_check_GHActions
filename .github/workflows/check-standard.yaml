@@ -63,3 +63,18 @@ jobs:
           df <- data.frame(x = 1:10);
           head(df)'
 
+
+# R expressions on multiple R versions
+  R-expr-multi-ver:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        R: [ '3.6.1', '4.1.2', '4.2.0' ]
+    name: R ${{ matrix.R }} ver-test
+    steps:
+      - uses: actions/checkout@v2
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: ${{ matrix.R }}
+      - run: Rscript -e 'print(sessionInfo()$R.version$version.string)'
+
