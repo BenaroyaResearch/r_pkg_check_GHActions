@@ -47,3 +47,19 @@ jobs:
       - uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: true
+
+
+# Run R expressions
+  R-expr:
+    runs-on: ubuntu-latest
+    name: run-R-expr
+    steps:
+      - uses: actions/checkout@v2
+      - uses: r-lib/actions/setup-r@master
+      - run: echo $GITHUB_WORKSPACE
+      - run: |
+          R -e 'print("a");
+          # -e flag for "run R expression"
+          df <- data.frame(x = 1:10);
+          head(df)'
+
