@@ -91,3 +91,15 @@ jobs:
          echo $GITHUB_WORKSPACE
          echo "$(pwd)"
          ls -la
+
+
+# Run bash script from inside the repo. Add permission (chmod) before or inside
+# this job
+  Bash-script:
+    runs-on: ubuntu-latest
+    name: run-bash-script
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+            echo "run script $(pwd)/exec/test_script.sh"
+            sh ./exec/test_script.sh
