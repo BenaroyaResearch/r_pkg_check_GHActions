@@ -4,6 +4,8 @@
 # RpkgCheck
 
 <!-- badges: start -->
+
+[![R-CMD-check](https://github.com/BIGslu/r_pkg_check/actions/workflows/check-standard.yaml/badge.svg)](https://github.com/BIGslu/r_pkg_check/actions/workflows/check-standard.yaml)
 <!-- badges: end -->
 
 ### Create package in a new directory (RStudio)
@@ -104,10 +106,192 @@ Default template is for `main` and `master` only:
 ***Note:*** to trigger `R CMD check` on every branch, substitute
 `[main, master]` with `'**'`.
 
+After pushing to remote repo, go to GitHub Actions and see if the
+workflow is triggered. You can click on each job to see the its’ console
+log.
+
 [Click](https://github.com/r-lib/actions/tree/master/examples) for more
 details on GitHub Actions workflows for R.
 
+### GitHub Actions status badge
+
+To generate status badge for your workflow (see the top of this README),
+go to GitHub and repo Actions. Select workflow you want to get badge,
+click `...` in right top corner and then `Create status badge` and copy
+rmarkdown code.
+
+### GitHub actions examples
+
+`.yaml` files are often used as configuration files. Indentations are
+part of the syntax and indicate nesting (like Python).
+
+#### Run R expression
+
+You can add the following examples to previously created `.yaml` file to
+add more jobs to existing workflow.
+
+    # Run R expressions
+      R-expr:
+        runs-on: ubuntu-latest
+        name: run-R-expr
+        steps:
+          - uses: actions/checkout@v2
+          - uses: r-lib/actions/setup-r@master
+          - run: echo $GITHUB_WORKSPACE
+          - run: |
+              R -e 'print("a");
+              # -e flag for "run R expression"
+              df <- data.frame(x = 1:10);
+              head(df)'
+
+What it does:
+
+-   `R-expr:` - job name in yaml config file
+-   `runs-on: ubuntu-latest` - operating system that runs workflow
+-   `name: run-R-expr` - name of the workflow that appears in repo’s
+    GitHub Actions
+-   `steps:` - opens the section for workflow steps
+-   `- uses: actions/checkout@v2`
+-   `- uses: r-lib/actions/setup-r@master` - environments/containers
+    that will check-out to the repository to access it and run GH A
+    workflows. The second is used to set up and allow to run `R` code in
+    the workflow
+-   `- run: echo $GITHUB_WORKSPACE` - commands to be run. E.g.
+    `$GITHUB_WORKSPACE` is a repo internal variable, print current
+    working directory
+-   `- run: |` - note `|` - it allows to write commands in multiple
+    runs. To run R code, use `R -e <code`. It opens `R` session inside
+    GH A workflow and runs the code. Note the `;` after function calls -
+    this is to separate expressions, the same as you would run multiple
+    function calls in one line in R studio -
+    `print("a"); print("hello")`.
+
+#### Run R expression on multiple versions
+
+This examples lets you run your `R` code on multiple `R` versions.
+
+    # R expressions on multiple R versions
+      R-expr-multi-ver:
+        runs-on: ubuntu-latest
+        strategy:
+          matrix:
+            R: [ '3.6.1', '4.1.2', '4.2.0' ]
+        name: R ${{ matrix.R }} ver-test
+        steps:
+          - uses: actions/checkout@v2
+          - uses: r-lib/actions/setup-r@v2
+            with:
+              r-version: ${{ matrix.R }}
+          - run: Rscript -e 'print(sessionInfo()$R.version$version.string)'
+
+What is new here:
+
+-   creates a version matrix for the job inside `strategy` clause
+
+<!-- -->
+
+    strategy:
+      matrix:
+        R: [ '3.6.1', '4.1.2', '4.2.0' ]
+
+an object `matrix.R` is created that will the job for each of the
+specified versions here. Note: same strategy was used to test
+`R-CMD-Check` on multiple operating systems. -
+`name: R ${{ matrix.R }} ver-test` - name is set for each job. In GH A,
+you will see for example `R 3.6.1 ver-test`. This iteratively updates
+the name. We refer to the matrix object using `${{ }}` - using `with`
+lets us use each version from `matrix.R` inside `R` container
+`r-lib/actions/setup-r@v2` we specified.
+
+    with:
+      r-version: ${{ matrix.R }}
+
+-   `- run: Rscript -e` alternative way is to run `Rscript -e`. Also
+    useful to run `.R` files, see next sections.
+
+#### Run bash commands
+
+    # Run bash commands in terminal
+      Greetings:
+        runs-on: ubuntu-latest
+        name: hello-where-am-i
+        steps:
+          - uses: actions/checkout@v2
+          - run: echo "Multiple run clause"
+          - run: |
+             echo "Hello"
+             echo "Current workdir is:"
+             echo $GITHUB_WORKSPACE
+             echo "$(pwd)"
+             ls -la
+
+This job simply runs `bash` commands. If you go to GH A and see console
+logs for the job, you will see printed current working directory twice:
+using `$GITHUB_WORKSPACE` and `"$(pwd)"`. Note: you can simply run bash
+commands, e.g. `ls -la` and see the output. We see that as default,
+working directory is where `DESCRIPTION` package files is, so package
+root directory.
+
+#### Run bash script from `.sh` file
+
+    # Run bash script from inside the repo. Add permission (chmod) before or inside
+    # this job
+      Bash-script:
+        runs-on: ubuntu-latest
+        name: run-bash-script
+        steps:
+          - uses: actions/checkout@v2
+          - run: |
+                echo "run script $(pwd)/exec/test_script.sh"
+                sh ./exec/test_script.sh
+
+You can place a bash script inside your package (here is in `exec`
+directory) and run it using GH A workflow. This can be used for example
+for testing a typical package workflow using `.sh`.
+
+#### Create another workflow in GH A
+
+If you create another `.yaml` file in `.github/workflows` directory, you
+will see another workflow running in your repo.
+
+    on:
+      push:
+        branches: '**'
+      pull_request:
+        branches: '**'
+
+    name: R-script
+    jobs:
+
+      install-R-pkg:
+        runs-on: macOS-latest
+        name: install-R-pkg
+        steps:
+          - uses: actions/checkout@v2
+          - uses: r-lib/actions/setup-r@master
+            with:
+              r-version: '4.1.2'
+          - run: |
+              Rscript $(pwd)/exec/install_script.R
+
+Remember that creating a new file, requires us to specify events that
+trigger job inside `on:` clause. `name: R-script` this is the name that
+will appear in GH Actions workflows. Now we’ll see 2: `R-CMD-Check` and
+`R-script`.
+
+-   this workflow runs on `macOS`, similarly is set to use `R` and
+    version is set to `4.1.2`
+-   in `run:` clause we specifiy an `R` script that lives inside `exec`
+    directory
+-   ***Note:***`R` environment we set here, is not the same environment
+    you have locally. This is a remote container with `R` and most
+    probably you don’t have many packages (like `dplyr`, `devtools` etc)
+
 ### Protected branches
+
+If you want to create a *protected branch*, i.e. branch that cannot be
+updated freely by anyone and prevent unintentionally breaking code
+because of not checked changes, do the following:
 
 Go to your repo on GitHub and click on `Settings`. Select `Branches`.
 
