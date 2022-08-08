@@ -19,6 +19,8 @@ knitr::opts_chunk$set(
 [![R-CMD-check](https://github.com/BIGslu/r_pkg_check/actions/workflows/check-standard.yaml/badge.svg)](https://github.com/BIGslu/r_pkg_check/actions/workflows/check-standard.yaml)
 <!-- badges: end -->
 
+
+
 ### Create package in a new directory (RStudio)
 
 Create new project (right top of RStudio or File -> New Project) and select R
@@ -208,6 +210,7 @@ strategy:
 an object `matrix.R` is created that will the job for each of the specified
 versions here. Note: same strategy was used to test `R-CMD-Check` on multiple
 operating systems. 
+
 - `name: R ${{ matrix.R }} ver-test` - name is set for each job. In GH A, you 
 will see for example `R 3.6.1 ver-test`. This iteratively updates the name. We 
 refer to the matrix object using `${{ }}`
