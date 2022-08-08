@@ -172,7 +172,7 @@ check-out to the repository to access it and run GH A workflows. The second is
 used to set up and allow to run `R` code in the workflow
 - `- run: echo $GITHUB_WORKSPACE` - commands to be run. E.g. `$GITHUB_WORKSPACE`
 is a repo internal variable, print current working directory
-- `- run: |` - note `|` - it allows to write commands in multiple runs. To run R
+- `- run: |` - note `|` - it allows to write commands in multiple lines. To run R
 code, use `R -e <code`. It opens `R` session inside GH A workflow and runs the 
 code. Note the `;` after function calls - this is to separate expressions,
 the same as you would run multiple function calls in one line in R studio - 
